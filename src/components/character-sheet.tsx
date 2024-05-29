@@ -1,7 +1,13 @@
-import { Application, Assets, Sprite, Text, TextStyle } from "pixi.js";
+import { ATTRIBUTES, Character } from "../utils/character-generator";
+import {
+  Application,
+  Assets,
+  Sprite,
+  Text,
+  TextOptions,
+  TextStyle,
+} from "pixi.js";
 import React, { useEffect, useRef, useState } from "react";
-
-import { Character } from "../utils/character-generator";
 
 declare global {
   interface Window {
@@ -23,7 +29,6 @@ const CharacterSheet: React.FC<Props> = ({ character }) => {
     let destroyed = false;
     (async () => {
       await pixiApp.init({ width: 2200, height: 1700 });
-      console.log("init");
       if (destroyed) {
         pixiApp.destroy();
         setApp(null);
@@ -46,7 +51,7 @@ const CharacterSheet: React.FC<Props> = ({ character }) => {
   }, []);
 
   useEffect(() => {
-    (globalThis as any).__PIXI_APP__ = app;
+    (globalThis as any).__PIXI_APP__ = app; // eslint-disable-line
   }, [app]);
 
   useEffect(() => {
@@ -59,28 +64,33 @@ const CharacterSheet: React.FC<Props> = ({ character }) => {
         const textStyle = new TextStyle({
           fontSize: "60px",
           fill: "#000000",
+          align: "right",
+        });
+        addText(app, {
+          anchor: 1,
+          style: textStyle,
+          text: character.name,
+          x: 1860,
+          y: 110,
         });
 
-        // const attributes = [
-        //   `Strength: ${character.Strength}`,
-        //   `Dexterity: ${character.Dexterity}`,
-        //   `Constitution: ${character.Constitution}`,
-        //   `Intelligence: ${character.Intelligence}`,
-        //   `Wisdom: ${character.Wisdom}`,
-        //   `Charisma: ${character.Charisma}`,
-        // ];
-        const attributes = [
-          character.Strength,
-          character.Dexterity,
-          character.Constitution,
-          character.Intelligence,
-          character.Wisdom,
-          character.Charisma,
-        ];
-        for (const [index, text] of attributes.entries()) {
-          const textElement = new Text({ style: textStyle, text });
-          textElement.position.set(2022, 338 + index * 50); // Adjust positions as needed
-          app.stage.addChild(textElement);
+        for (const [index, attributeName] of ATTRIBUTES.entries()) {
+          addText(app, {
+            anchor: 0.5,
+            style: textStyle,
+            text: character[attributeName],
+            x: 2020,
+            y: 340 + index * 150,
+          });
+          addText(app, {
+            anchor: { x: 0.5, y: 1 },
+            style: textStyle,
+            text: character[`${attributeName}Adj`].toLocaleString("en", {
+              signDisplay: "exceptZero",
+            }),
+            x: 1714,
+            y: 345 + index * 150,
+          });
         }
       };
 
@@ -96,3 +106,14 @@ const CharacterSheet: React.FC<Props> = ({ character }) => {
 };
 
 export default CharacterSheet;
+function addText(
+  app: Application,
+  options: TextOptions & {
+    x: number;
+    y: number;
+  }
+) {
+  const textElement = new Text(options);
+  textElement.position = options;
+  app.stage.addChild(textElement);
+}
