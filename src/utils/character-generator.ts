@@ -1,25 +1,14 @@
-import classes from './classes.json';
+import {Attribute, Class, GENDERS, Gender, Race, classes} from './system';
+
 import names from  './names.json';
 
-export type Gender = keyof typeof names;
-const GENDERS : Gender[] = ['male', 'female'] as const;
-export type Race = keyof typeof names[Gender] //'human' | 'elf' | 'dwarf' | 'halfling';
-// const RACES : Race[] = ['human', 'elf', 'dwarf', 'halfling'] as const;
-export const ATTRIBUTES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const;
-export type Attribute = typeof ATTRIBUTES[number];
-
-export type Class = {
-    name: Record<Gender, string>;
-    race: Race;
-    primeRequisites: Attribute[];
-};
 export function generateName(gender: Gender, race: Race): string {
     const namesList = names[gender][race];
     const randomIndex = Math.floor(Math.random() * namesList.length);
     return namesList[randomIndex];
 }
 
-export function randomElement<T>(list: Array<T>): T {
+export function randomElement<T>(list: ReadonlyArray<T>): T {
     const randomIndex = Math.floor(Math.random() * list.length * 1_000) % list.length;
     return list[randomIndex];
 }
@@ -65,7 +54,6 @@ function chooseClass(character: Record<Attribute, number>) {
 
     return bestClass.class;
 }
-
 
 export function generateCharacter() {
     const attributes = {

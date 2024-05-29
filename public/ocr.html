@@ -125,7 +125,10 @@
                 langPath: "https://tessdata.projectnaptha.com/4.0.0_best",
               })
                 .then(({ data: { text } }) => {
-                  document.getElementById("output").innerText = +text;
+                  document.getElementById("output").innerText = text.replace(
+                    /\n/g,
+                    " "
+                  );
                   document.getElementById("spinner").style.display = "none";
                 })
                 .catch((err) => {
