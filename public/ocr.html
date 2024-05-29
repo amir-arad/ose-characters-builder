@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>זיהוי טקסט בעברית</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v2.1.1/dist/tesseract.min.js"></script>
+    <style>
+      body {
+        direction: rtl;
+        font-family: Arial, sans-serif;
+      }
+      #pasteArea {
+        width: 100%;
+        height: 200px;
+        border: 2px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #aaa;
+      }
+      #images {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+      }
+      img {
+        max-width: 45%;
+        border: 1px solid #ccc;
+      }
+      #output {
+        margin-top: 20px;
+      }
+      #spinner {
+        display: none;
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #3498db;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>זיהוי טקסט בעברית</h1>
+    <h2>הדבק את התמונה שלך כאן</h2>
+    <div id="images">
+      <div>
+        <h3>תמונה מקורית</h3>
+        <img id="originalImage" src="" alt="תמונה מקורית" />
+      </div>
+      <div>
+        <h3>תמונה מעובדת</h3>
+        <img id="preprocessedImage" src="" alt="תמונה מעובדת" />
+      </div>
+    </div>
+    <div id="spinner"></div>
+    <p id="output">טקסט מזוהה:</p>
+
+    <script>
+      function preprocessImage(imageBlob, callback) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+
+          // Convert to grayscale
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            const gray =
+              data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
+            data[i] = data[i + 1] = data[i + 2] = gray;
+          }
+          ctx.putImageData(imageData, 0, 0);
+
+          // Apply thresholding
+          const binaryImage = ctx.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+          const binaryData = binaryImage.data;
+          for (let i = 0; i < binaryData.length; i += 4) {
+            const gray = binaryData[i];
+            const threshold = 150; // Adjust this value as needed
+            const value = gray > threshold ? 255 : 0;
+            binaryData[i] = binaryData[i + 1] = binaryData[i + 2] = value;
+          }
+          ctx.putImageData(binaryImage, 0, 0);
+
+          callback(canvas.toDataURL());
+        };
+        img.src = URL.createObjectURL(imageBlob);
+      }
+
+      document.addEventListener("paste", function (event) {
+        const items = event.clipboardData.items;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf("image") !== -1) {
+            const blob = items[i].getAsFile();
+            const originalImageURL = URL.createObjectURL(blob);
+            document.getElementById("originalImage").src = originalImageURL;
+
+            preprocessImage(blob, function (preprocessedImageURL) {
+              document.getElementById("preprocessedImage").src =
+                preprocessedImageURL;
+
+              // Show the spinner
+              document.getElementById("spinner").style.display = "block";
+
+              Tesseract.recognize(preprocessedImageURL, "heb", {
+                langPath: "https://tessdata.projectnaptha.com/4.0.0_best",
+              })
+                .then(({ data: { text } }) => {
+                  document.getElementById("output").innerText =
+                    "טקסט מזוהה: " + text;
+                  // Hide the spinner
+                  document.getElementById("spinner").style.display = "none";
+                })
+                .catch((err) => {
+                  console.error("Error:", err);
+                  // Hide the spinner
+                  document.getElementById("spinner").style.display = "none";
+                });
+            });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
