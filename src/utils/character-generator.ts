@@ -1,13 +1,18 @@
+import classes from './classes.json';
 import names from  './names.json';
 
 export type Gender = keyof typeof names;
 const GENDERS : Gender[] = ['male', 'female'] as const;
 export type Race = keyof typeof names[Gender] //'human' | 'elf' | 'dwarf' | 'halfling';
-const RACES : Race[] = ['human', 'elf', 'dwarf', 'halfling'] as const;
-
+// const RACES : Race[] = ['human', 'elf', 'dwarf', 'halfling'] as const;
 export const ATTRIBUTES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const;
 export type Attribute = typeof ATTRIBUTES[number];
 
+export type Class = {
+    name: Record<Gender, string>;
+    race: Race;
+    primeRequisites: Attribute[];
+};
 export function generateName(gender: Gender, race: Race): string {
     const namesList = names[gender][race];
     const randomIndex = Math.floor(Math.random() * namesList.length);
@@ -15,7 +20,7 @@ export function generateName(gender: Gender, race: Race): string {
 }
 
 export function randomElement<T>(list: Array<T>): T {
-    const randomIndex = Math.floor(Math.random() * list.length);
+    const randomIndex = Math.floor(Math.random() * list.length * 1_000) % list.length;
     return list[randomIndex];
 }
 
@@ -25,45 +30,68 @@ export function roll4d6DropLowest(): number {
     return rolls.sort((a, b) => a - b).slice(1).reduce((a, b) => a + b, 0);
 }
 
-function getAdjustment(attribute : number){
-    if (attribute <= 3) return -3;
-    if (attribute <= 5) return -2;
-    if (attribute <= 8) return -1;
-    if (attribute <= 12) return 0;
-    if (attribute <= 15) return 1;
-    if (attribute <= 17) return 2;
-    return 3;
+
+const ADJUSTMENTS: { [key: number]: number } = {
+    3: -3,
+    4: -2, 5: -2,
+    6: -1, 7: -1, 8: -1,
+    9: 0, 10: 0, 11: 0, 12: 0,
+    13: 1, 14: 1, 15: 1,
+    16: 2, 17: 2,
+    18: 3,
+};
+
+function getAdjustment(attribute: number): number {
+    return ADJUSTMENTS[attribute] || 0;
 }
+function calculateAveragePrimeRequisite(character: Record<Attribute, number>, primeRequisites: Attribute[]): number {
+    return primeRequisites.reduce((sum, attr) => sum + character[attr], 0) / primeRequisites.length;
+}
+
+function chooseClass(character: Record<Attribute, number>) {
+    let bestClass: { class: Class; avg: number }  = { class: classes[0] as Class, avg: 0 };
+
+    for (const currentClass of (classes as Class[])) {
+        const classPrimeAvg = calculateAveragePrimeRequisite(character, currentClass.primeRequisites);
+        const candidate = { class: currentClass, avg: classPrimeAvg };
+        if (candidate.avg > bestClass.avg) {
+            bestClass = candidate;
+        } else if (candidate.avg === bestClass.avg) {
+            if (Math.random() > 0.5) {
+                bestClass = candidate;
+            }
+        }
+    }
+
+    return bestClass.class;
+}
+
+
 export function generateCharacter() {
+    const attributes = {
+        Strength: roll4d6DropLowest(),
+        Dexterity: roll4d6DropLowest(),
+        Constitution: roll4d6DropLowest(),
+        Intelligence: roll4d6DropLowest(),
+        Wisdom: roll4d6DropLowest(),
+        Charisma: roll4d6DropLowest(),
+    };
+    const clazz = chooseClass(attributes);
     const gender = randomElement(GENDERS);
-    const name = randomElement(RACES.flatMap((r: Race) => names[gender][r]));
+    const name = randomElement(names[gender][clazz.race]);
+    const level = 1;
     return {
         name,
         gender,
-        Strength: roll4d6DropLowest(),
-        get StrengthAdj() {
-            return getAdjustment(this.Strength);
-        },
-        Dexterity: roll4d6DropLowest(),
-        get DexterityAdj() {
-            return getAdjustment(this.Dexterity);
-        },
-        Constitution: roll4d6DropLowest(),
-        get ConstitutionAdj() {
-            return getAdjustment(this.Constitution);
-        },
-        Intelligence: roll4d6DropLowest(),
-        get IntelligenceAdj() {
-            return getAdjustment(this.Intelligence);
-        },
-        Wisdom: roll4d6DropLowest(),
-        get WisdomAdj() {
-            return getAdjustment(this.Wisdom);
-        },
-        Charisma: roll4d6DropLowest(),
-        get CharismaAdj() {
-            return getAdjustment(this.Charisma);
-        },
+        class: clazz,
+        level,
+        ...attributes,
+        get StrengthAdj() {return getAdjustment(attributes.Strength);},
+        get DexterityAdj() {return getAdjustment(attributes.Dexterity);},
+        get ConstitutionAdj() {return getAdjustment(attributes.Constitution);},
+        get IntelligenceAdj() {return getAdjustment(attributes.Intelligence);},
+        get WisdomAdj() {return getAdjustment(attributes.Wisdom);},
+        get CharismaAdj() {return getAdjustment(attributes.Charisma);},
     };
 }
 

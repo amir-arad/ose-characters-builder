@@ -1,0 +1,50 @@
+[
+  {
+    "name": {
+      "male": "לוחם",
+      "female": "לוחמת"
+    },
+    "race": "human",
+    "primeRequisites": ["Strength"]
+  },
+  {
+    "name": {
+      "male": "גנב",
+      "female": "גנבת"
+    },
+    "race": "human",
+    "primeRequisites": ["Dexterity"]
+  },
+  {
+    "name": {
+      "male": "כהן",
+      "female": "כהנת"
+    },
+    "race": "human",
+    "primeRequisites": ["Wisdom"]
+  },
+  {
+    "name": {
+      "male": "קוסם",
+      "female": "קוסמת"
+    },
+    "race": "human",
+    "primeRequisites": ["Intelligence"]
+  },
+  {
+    "name": {
+      "male": "פייטן",
+      "female": "פייטנית"
+    },
+    "race": "human",
+    "primeRequisites": ["Charisma", "Dexterity"]
+  },
+  {
+    "name": {
+      "male": "פלאדין",
+      "female": "פלאדינית"
+    },
+    "race": "human",
+    "primeRequisites": ["Strength", "Charisma"]
+  }
+]

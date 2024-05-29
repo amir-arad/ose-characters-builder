@@ -89,6 +89,20 @@ const CharacterSheet: React.FC<Props> = ({ character }) => {
           x: 1860,
           y: 110,
         });
+        addText(app, {
+          anchor: 1,
+          style: textStyle,
+          text: character.class.name[character.gender],
+          x: 1300,
+          y: 100,
+        });
+        addText(app, {
+          anchor: 1,
+          style: textStyle,
+          text: character.level,
+          x: 725,
+          y: 100,
+        });
 
         for (const [index, attributeName] of ATTRIBUTES.entries()) {
           addText(app, {
