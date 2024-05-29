@@ -19,16 +19,29 @@ interface Props {
   character: Character;
 }
 
+const aspectRatio = 22 / 17;
 const CharacterSheet: React.FC<Props> = ({ character }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [app, setApp] = useState<Application | null>(null);
 
   useEffect(() => {
     const pixiApp = new Application();
+
+    const setCanvasSize = () => {
+      const canvasWidth = window.innerWidth;
+      const canvasHeight = canvasWidth / aspectRatio;
+      pixiApp.renderer.resize(canvasWidth, canvasHeight);
+      pixiApp.stage.scale = canvasWidth / 2200;
+    };
+
     let inited = false;
     let destroyed = false;
     (async () => {
-      await pixiApp.init({ width: 2200, height: 1700 });
+      await pixiApp.init({
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+        backgroundColor: 0x1099bb,
+      });
       if (destroyed) {
         pixiApp.destroy();
         setApp(null);
@@ -38,12 +51,15 @@ const CharacterSheet: React.FC<Props> = ({ character }) => {
         if (canvasRef.current) {
           canvasRef.current.appendChild(pixiApp.canvas);
         }
+        window.addEventListener("resize", setCanvasSize);
+        setCanvasSize();
       }
     })();
     return () => {
       if (inited) {
         pixiApp.destroy(true, true);
         setApp(null);
+        window.removeEventListener("resize", setCanvasSize);
       } else {
         destroyed = true;
       }
