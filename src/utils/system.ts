@@ -4,6 +4,8 @@ export const GENDERS = ['male', 'female'] as const;
 export type Gender = typeof GENDERS[number];
 export const ATTRIBUTES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const;
 export type Attribute = typeof ATTRIBUTES[number];
+export const SAVING_THROWS = ['deathRayPoison', 'magicWands', 'paralysisTurnToStone', 'dragonBreath', 'spells'] as const;
+export type SavingThrow = typeof SAVING_THROWS[number];
 export type Die = 4 | 6 | 8 | 10 | 12 | 20;
 
 export type Ability = {
@@ -18,13 +20,7 @@ export type Class = {
     race: Race;
     primeRequisites: Attribute[];
     hitDice: Die;
-    savingThrows: {
-        deathRayPoison: number;
-        magicWands: number;
-        paralysisTurnToStone: number;
-        dragonBreath: number;
-        spells: number;
-    };
+    savingThrows: Record<SavingThrow, number>;
 };
 
 export const classes: Class[] =  [

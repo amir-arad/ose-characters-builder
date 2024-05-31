@@ -1,3 +1,4 @@
+import { ATTRIBUTES, SAVING_THROWS } from "../utils/system";
 import {
     Application,
     Assets,
@@ -7,7 +8,6 @@ import {
     TextStyle,
 } from "pixi.js";
 
-import { ATTRIBUTES } from "../utils/system";
 import { Character } from "../utils/character-generator";
 
 function addText(
@@ -73,6 +73,15 @@ export  async function drawCharacter(app: Application, character: Character) {
         x: 1714,
         y: 345 + index * 150,
       });
+    }
+    for (const [index, savingThrowName] of SAVING_THROWS.entries()) {
+        addText(app, {
+            anchor: 0.5,
+            style: textStyle,
+            text: character.class.savingThrows[savingThrowName],
+            x: 2010 - index * 151,
+            y: 1340,
+          });
     }
   }
   

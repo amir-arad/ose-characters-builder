@@ -19,7 +19,6 @@ export function roll4d6DropLowest(): number {
     return rolls.sort((a, b) => a - b).slice(1).reduce((a, b) => a + b, 0);
 }
 
-
 const ADJUSTMENTS: { [key: number]: number } = {
     3: -3,
     4: -2, 5: -2,
