@@ -98,6 +98,7 @@ export  async function drawCharacter(app: Application, character: Character) {
         align: "right",
         wordWrap: true,
         wordWrapWidth : 550,
+        whiteSpace: 'normal'
       });
     addText(app, {
         anchor: { x: 1, y: 0 },
