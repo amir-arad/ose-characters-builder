@@ -2,10 +2,11 @@ import { ATTRIBUTES, SAVING_THROWS } from "../utils/system";
 import {
     Application,
     Assets,
+    CanvasTextMetrics,
     Sprite,
     Text,
     TextOptions,
-    TextStyle,
+    TextStyle
 } from "pixi.js";
 
 import { Character } from "../utils/character-generator";
@@ -13,10 +14,17 @@ import { Character } from "../utils/character-generator";
 function addText(
     app: Application,
     options: TextOptions & {
-      x: number;
-      y: number;
-    }
+        x: number;
+        y: number;
+        text: string | number;
+        style: TextStyle;
+      }
   ) {
+    if (typeof options.text === 'string') {
+        // make direction of text 'Rtl'
+        const { lines } = CanvasTextMetrics.measureText(options.text, options.style);
+        options.text = `\u202b${lines.join('\u202c \u202b')}\u202c`;
+    }
     const textElement = new Text(options);
     textElement.position = options;
     app.stage.addChild(textElement);
@@ -83,6 +91,21 @@ export  async function drawCharacter(app: Application, character: Character) {
             y: 1340,
           });
     }
+    const descTextStyle = new TextStyle({
+        fontSize: "24px",
+        lineHeight: 30,
+        fill: "#000000",
+        align: "right",
+        wordWrap: true,
+        wordWrapWidth : 550,
+      });
+    addText(app, {
+        anchor: { x: 1, y: 0 },
+        style: descTextStyle,
+        text: character.class.description,
+        x: 1253,
+        y: 320 ,
+      });
   }
   
   
